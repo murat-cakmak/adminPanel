@@ -2,7 +2,7 @@
 -- Çoklu tenant, RBAC, audit ve modüler sektör tabloları içerir.
 
 CREATE TABLE tenants (
-    id CHAR(26) NOT NULL PRIMARY KEY,
+    id CHAR(50) NOT NULL PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     sector ENUM('retail','manufacturing','healthcare','finance','logistics','generic') DEFAULT 'generic',
     plan VARCHAR(60) DEFAULT 'pro',
@@ -11,8 +11,8 @@ CREATE TABLE tenants (
 ) ENGINE=InnoDB;
 
 CREATE TABLE users (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(50) NOT NULL,
     email VARCHAR(180) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(160) NOT NULL,
@@ -25,8 +25,8 @@ CREATE TABLE users (
 ) ENGINE=InnoDB;
 
 CREATE TABLE roles (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(50) NOT NULL,
     name VARCHAR(80) NOT NULL,
     description VARCHAR(240),
     scope ENUM('platform','business','analytics') DEFAULT 'business',
@@ -40,7 +40,7 @@ CREATE TABLE permissions (
 ) ENGINE=InnoDB;
 
 CREATE TABLE role_permissions (
-    role_id CHAR(26) NOT NULL,
+    role_id CHAR(50) NOT NULL,
     permission_id INT NOT NULL,
     PRIMARY KEY (role_id, permission_id),
     CONSTRAINT fk_role_permissions_role FOREIGN KEY (role_id) REFERENCES roles(id),
@@ -48,8 +48,8 @@ CREATE TABLE role_permissions (
 ) ENGINE=InnoDB;
 
 CREATE TABLE user_roles (
-    user_id CHAR(26) NOT NULL,
-    role_id CHAR(26) NOT NULL,
+    user_id CHAR(50) NOT NULL,
+    role_id CHAR(50) NOT NULL,
     PRIMARY KEY (user_id, role_id),
     CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id) REFERENCES roles(id)
@@ -57,8 +57,8 @@ CREATE TABLE user_roles (
 
 CREATE TABLE sessions (
     id CHAR(32) NOT NULL PRIMARY KEY,
-    user_id CHAR(26) NOT NULL,
-    tenant_id CHAR(26) NOT NULL,
+    user_id CHAR(50) NOT NULL,
+    tenant_id CHAR(50) NOT NULL,
     refresh_token VARCHAR(255),
     user_agent VARCHAR(200),
     ip_address VARCHAR(64),
@@ -70,8 +70,8 @@ CREATE TABLE sessions (
 
 CREATE TABLE audit_logs (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
-    user_id CHAR(26) NULL,
+    tenant_id CHAR(50) NOT NULL,
+    user_id CHAR(50) NULL,
     actor VARCHAR(160),
     action VARCHAR(120) NOT NULL,
     entity VARCHAR(120) NOT NULL,
@@ -84,8 +84,8 @@ CREATE TABLE audit_logs (
 ) ENGINE=InnoDB;
 
 CREATE TABLE sectors (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(50) NOT NULL,
     code VARCHAR(80) NOT NULL,
     name VARCHAR(120) NOT NULL,
     description VARCHAR(240),
@@ -93,8 +93,8 @@ CREATE TABLE sectors (
 ) ENGINE=InnoDB;
 
 CREATE TABLE modules (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    sector_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    sector_id CHAR(50) NOT NULL,
     name VARCHAR(120) NOT NULL,
     summary VARCHAR(240),
     status ENUM('active','disabled') DEFAULT 'active',
@@ -103,11 +103,11 @@ CREATE TABLE modules (
 ) ENGINE=InnoDB;
 
 CREATE TABLE kpi_definitions (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
-    module_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(50) NOT NULL,
+    module_id CHAR(50) NOT NULL,
     name VARCHAR(160) NOT NULL,
-    unit VARCHAR(20),
+    unit VARCHAR(50),
     description VARCHAR(240),
     calculation TEXT,
     data_source VARCHAR(160),
@@ -117,7 +117,7 @@ CREATE TABLE kpi_definitions (
 
 CREATE TABLE kpi_values (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    kpi_id CHAR(26) NOT NULL,
+    kpi_id CHAR(50) NOT NULL,
     period_start DATE,
     period_end DATE,
     value DECIMAL(18,4),
@@ -127,10 +127,10 @@ CREATE TABLE kpi_values (
 ) ENGINE=InnoDB;
 
 CREATE TABLE projects (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(50) NOT NULL,
     name VARCHAR(160) NOT NULL,
-    owner_id CHAR(26) NOT NULL,
+    owner_id CHAR(50) NOT NULL,
     status ENUM('idea','planning','in_progress','done','on_hold') DEFAULT 'planning',
     due_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -139,10 +139,10 @@ CREATE TABLE projects (
 ) ENGINE=InnoDB;
 
 CREATE TABLE tasks (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    project_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    project_id CHAR(50) NOT NULL,
     title VARCHAR(200) NOT NULL,
-    assignee_id CHAR(26),
+    assignee_id CHAR(50),
     status ENUM('todo','in_progress','done','blocked') DEFAULT 'todo',
     priority ENUM('low','medium','high','critical') DEFAULT 'medium',
     due_date DATE,
@@ -154,8 +154,8 @@ CREATE TABLE tasks (
 
 CREATE TABLE notifications (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
-    user_id CHAR(26) NOT NULL,
+    tenant_id CHAR(50) NOT NULL,
+    user_id CHAR(50) NOT NULL,
     type VARCHAR(80) NOT NULL,
     payload JSON,
     is_read TINYINT(1) DEFAULT 0,
@@ -165,8 +165,8 @@ CREATE TABLE notifications (
 ) ENGINE=InnoDB;
 
 CREATE TABLE integration_endpoints (
-    id CHAR(26) NOT NULL PRIMARY KEY,
-    tenant_id CHAR(26) NOT NULL,
+    id CHAR(50) NOT NULL PRIMARY KEY,
+    tenant_id CHAR(50) NOT NULL,
     name VARCHAR(120) NOT NULL,
     type ENUM('webhook','database','sftp','queue') NOT NULL,
     config JSON,

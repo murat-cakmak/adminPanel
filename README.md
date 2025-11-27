@@ -20,8 +20,9 @@ npm run dev
 ## Dosya Yapısı
 - `app/` – Next.js App Router sayfaları (`page.tsx`, `login/page.tsx`)
 - `components/` – Üst menü, istatistik ve sektör kartı bileşenleri
-- `lib/` – Sektör ve navigasyon konfigürasyonları
+- `lib/` – DB bağlantısı (`lib/db.ts`) ve dashboard veri yardımcıları (`lib/dashboardData.ts`)
 - `database/schema.sql` – RBAC, tenant ve KPI tablolarını içeren MySQL şeması
+- `database/seed.sql` – Demo veriler (tenant, kullanıcı, sektör, modül, KPI)
 - `tailwind.config.ts` – Tema ve içerik tarama ayarları
 
 ## Veritabanı Şeması Özeti
@@ -33,4 +34,30 @@ npm run dev
 Şemayı uygulamak için:
 ```sql
 SOURCE database/schema.sql;
+```
+
+## Veritabanı Bağlantısı
+1) Ortam değişkenlerini ayarla:
+```bash
+cp .env.example .env.local
+# DB_HOST, DB_USER, DB_PASSWORD, DB_NAME değerlerini MySQL kurulumuna göre güncelle
+```
+2) MySQL'de veritabanını oluşturup şemayı yükle:
+```bash
+mysql -u root -p -e "CREATE DATABASE admin_panel DEFAULT CHARACTER SET utf8mb4;"
+mysql -u root -p admin_panel < database/schema.sql
+```
+Demo veriyi yüklemek için:
+```bash
+mysql -u root -p admin_panel < database/seed.sql
+```
+3) Next.js içinde bağlanmak için `lib/db.ts` hazır:
+```ts
+import { query, pingDatabase } from '@/lib/db';
+
+// sorgu örneği
+const tenants = await query<{ id: string; name: string }>('SELECT id, name FROM tenants');
+
+// sağlık kontrolü
+await pingDatabase();
 ```

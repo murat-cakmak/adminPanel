@@ -1,10 +1,18 @@
 import { SectorCard } from "@/components/ui/SectorCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { personas } from "@/lib/navigation";
-import { sectorTemplates } from "@/lib/sectorConfig";
 import { TopBar } from "../components/layout/TopBar";
+import { getDashboardData } from "@/lib/dashboardData";
 
-export default function Home() {
+const accentPalette = [
+  "from-brand-primary to-brand-secondary",
+  "from-brand-secondary to-brand-accent",
+  "from-emerald-400 to-brand-secondary",
+  "from-orange-400 to-brand-primary",
+  "from-brand-accent to-pink-500",
+];
+
+export default async function Home() {
+  const { stats, sectors, personas, kpiHighlights } = await getDashboardData();
   return (
     <main className="min-h-screen">
       <TopBar />
@@ -27,21 +35,41 @@ export default function Home() {
               <span className="badge">Hazır KPI kartları</span>
             </div>
             <div className="grid gap-4 md:grid-cols-3">
-              <StatCard label="Modüler sayfa" value="28+" trend="Sayfa şablonu" />
-              <StatCard label="Entegrasyon" value="8 hazır" trend="Webhook & DB" />
-              <StatCard label="Kullanıcı rolü" value="RBAC" trend="Rol tabanlı erişim" />
+              <StatCard
+                label="Tenant"
+                value={stats.tenants.toString()}
+                trend="Aktif müşteri"
+              />
+              <StatCard
+                label="Modül"
+                value={stats.modules.toString()}
+                trend="Sektör modülü"
+              />
+              <StatCard
+                label="KPI"
+                value={stats.kpis.toString()}
+                trend="Takip edilen gösterge"
+              />
             </div>
             <div className="grid gap-3 md:grid-cols-3">
-              {personas.map((persona) => (
+              {personas.length ? (
+                personas.map((persona) => (
+                  <div
+                    key={persona.role}
+                    className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                  >
+                    <p className="text-sm text-white/60">{persona.role}</p>
+                    <p className="text-white font-semibold">{persona.focus}</p>
+                    <p className="mt-2 text-white/70 text-sm">{persona.expectations}</p>
+                  </div>
+                ))
+              ) : (
                 <div
-                  key={persona.role}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4"
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/70"
                 >
-                  <p className="text-sm text-white/60">{persona.role}</p>
-                  <p className="text-white font-semibold">{persona.focus}</p>
-                  <p className="mt-2 text-white/70 text-sm">{persona.expectations}</p>
+                  Rol verisi bulunamadı. `roles` tablosuna kayıt ekleyin veya seed çalıştırın.
                 </div>
-              ))}
+              )}
             </div>
           </div>
           <div className="card glow p-6 space-y-4">
@@ -71,9 +99,20 @@ export default function Home() {
             <p className="text-sm text-white/70">Her biri modüler yapıda, veri modeli ve KPI önerileriyle</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {sectorTemplates.map((template) => (
-              <SectorCard key={template.id} template={template} />
-            ))}
+            {sectors.length ? (
+              sectors.map((sector, idx) => (
+                <SectorCard
+                  key={sector.id}
+                  sector={sector}
+                  accentClass={accentPalette[idx % accentPalette.length]}
+                />
+              ))
+            ) : (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
+                Sektör kaydı bulunamadı. `sectors` ve `modules` tablolarını doldurun veya
+                `database/seed.sql` dosyasını çalıştırın.
+              </div>
+            )}
           </div>
         </section>
 
@@ -82,10 +121,21 @@ export default function Home() {
             <p className="badge">KPI & dashboard kurguları</p>
             <h3 className="text-xl font-semibold text-white">Hazır gösterge panelleri</h3>
             <div className="grid gap-3 md:grid-cols-2">
-              <StatCard label="Operasyonel SLA" value="95%" trend="Son 30 gün" />
-              <StatCard label="NPS" value="+42" trend="Müşteri deneyimi" />
-              <StatCard label="Stok doğruluk" value="98.5%" trend="Depo & lojistik" />
-              <StatCard label="Tahsilat süresi" value="12 gün" trend="Finans" />
+              {kpiHighlights.length ? (
+                kpiHighlights.map((kpi) => (
+                  <StatCard
+                    key={kpi.id}
+                    label={kpi.name}
+                    value={kpi.unit ? `${kpi.value} ${kpi.unit}` : kpi.value}
+                    trend={kpi.periodEnd ? `Bitiş: ${kpi.periodEnd}` : undefined}
+                  />
+                ))
+              ) : (
+                <div className="col-span-2 rounded-2xl border border-white/10 bg-white/5 p-4 text-white/70">
+                  KPI verisi bulunamadı. `kpi_definitions` ve `kpi_values` tablolarına kayıt
+                  ekleyin.
+                </div>
+              )}
             </div>
           </div>
           <div className="card glow space-y-3 p-6" id="architecture">
